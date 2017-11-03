@@ -1,3 +1,4 @@
+site.retry
 .vagrant
 *.swp
 Vagrantfile

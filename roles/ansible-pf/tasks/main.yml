@@ -1,0 +1,26 @@
+---
+
+- name: Configure PF
+  template:
+    src: pf.conf.j2
+    dest: /etc/pf.conf
+    validate: 'pfctl -n -f %s'
+  notify: reload PF
+
+- name: Enable on boot
+  sysrc:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+   - { name: "pf_enable", value: "YES" }
+   - { name: "pflog_enable", value: "YES" }
+   - { name: "ftpproxy_enable", value: "YES" }
+   - { name: "ftpproxy_flags", value: "-r" }
+
+- meta: flush_handlers
+
+- name: Is started
+  service: name=pf state=started enabled=yes
+  async: 0
+  poll: 0
+  ignore_errors: true

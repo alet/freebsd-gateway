@@ -1,0 +1,21 @@
+---
+
+- name: Setup out interface
+  sysrc:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { name: "hostname", value: "gateway" }
+    - { name: "ifconfig_em0", value: "SYNCDHCP" }
+    - { name: "ifconfig_{{ ext_if }}", value: "SYNCDHCP" }
+    - { name: "cloned_interfaces", value: "bridge0 tap0" }
+    - { name: "ifconfig_bridge0", value: "inet {{int_net}}{% for item in int_brg_if %}{{ ' addm ' }}{{item}}{% endfor %} up" }
+    - { name: "ifconfig_tap0", value: "up" }
+  notify: restart network
+
+- meta: flush_handlers
+
+- name: Install ezjail
+  pkgng:
+    name: ezjail
+    state: present

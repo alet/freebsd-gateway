@@ -1,0 +1,7 @@
+---
+
+- name: restart network
+  service: name=netif state=restarted
+  async: 0
+  poll: 0
+  ignore_errors: true

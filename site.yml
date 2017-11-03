@@ -1,0 +1,11 @@
+---
+
+- name: Configure as gateway
+  hosts: gateway
+  become: yes
+  vars:
+    - ansible_python_interpreter: /usr/local/bin/python2.7
+
+  roles:
+    - common
+    - ansible-pf

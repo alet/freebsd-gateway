@@ -1,0 +1,18 @@
+---
+# Tunable variables
+
+timezone: Europe/Kiev
+int_if: bridge0
+int_brg_if:
+  - em1
+  - tap0
+int_net: 192.168.5.1/24
+ext_if: em2
+ext_tcp_services: "pop3s"
+ext_udp_services: "56124"
+# 5555 - UPnP port (will open ports for torrent and dc++ clients
+# 9091 - Transmission web interface
+int_tcp_services: "smtp pop3s http 5555 9091 microsoft-ds netbios-ssn"
+int_udp_services: "domain ntp tftp netbios-ns netbios-dgm"
+int_mult_services: "bootps"
+

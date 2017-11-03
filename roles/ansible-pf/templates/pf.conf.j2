@@ -1,0 +1,132 @@
+# {{ ansible_managed }}
+
+# Use a macro for the interface name, so it can be changed easily
+ext_if = "{{ ext_if }}"
+int_if = "{{ int_if }}"
+brg_if = "{ {{ int_brg_if | join(' ') }} }"
+vagrant_if="em0"
+
+# List of permited services on server. NAT should pass any
+
+## Services on external net
+extnet_tcp_services = "{ {{ ext_tcp_services }} }"
+extnet_udp_services = "{ {{ ext_udp_services }} }"
+
+## Services on internal net
+lannet_tcp_services = "{ {{ int_tcp_services }} }"
+### For UDP services open both transmission protocol (UDP & TCP)
+lannet_udp_services = "{ {{ int_udp_services }} }"
+### Services needs multicast to operate
+lannet_mtc_services = "{ {{int_mult_services }} }"
+
+## ICMP traff, ping and service packets
+icmp_types ="{ echoreq unreach }"
+
+# Below this line is the configuration
+######################################
+
+# Table for banned bots
+table <fail2ban> persist
+
+# Networks
+lannet = $int_if:network
+privatenet= "{ 172.16.0.0/12, 255.255.255.255/32 }"
+
+# Rules
+#####################################
+
+# For debug
+set block-policy return
+
+# skip loopback interface
+set skip on lo0
+set skip on $vagrant_if
+
+# 06.03.2017
+set limit states 40000
+
+# normalize all incoming traffic
+scrub in all fragment reassemble no-df random-id max-mss 1440
+
+# NAT & RDR  rules
+## UPnPd rdr anchor
+rdr-anchor miniupnpd
+## process FTP by ftpproxy
+nat-anchor "ftp-proxy/*"
+rdr-anchor "ftp-proxy/*"
+### All ftp traffic route to ftp-proxy. Suppose no ftp server on this machine
+rdr on $int_if proto tcp from any to any port ftp -> 127.0.0.1 port 8021
+## NAT
+nat on $ext_if inet from $lannet tag LAN_INET_NAT -> ($ext_if)
+
+# block and log everything by default
+block log all
+
+# block anything coming from source we have no back routes for
+block in log from no-route to any
+
+# block packets whose ingress interface does not match the one in
+# the route back to their source address
+block in log from urpf-failed to any
+
+# block and log outgoing packets that do not have our address as source,
+# they are either spoofed or something is misconfigured (NAT disabled,
+# for instance), we want to be nice and do not send out garbage.
+block out log quick on $ext_if from ! ($ext_if) to any
+
+# silently drop broadcasts (cable modem noise)
+block in quick on $ext_if from any to 255.255.255.255
+
+# block and log incoming packets from reserved address space and invalid
+# addresses, they are either spoofed or misconfigured, we cannot reply to
+# them anyway (hence, no return-rst).
+block in log quick on $ext_if from $privatenet to any
+
+
+# SSH rules. Separate due to importance
+## Fail2ban block
+block in quick proto tcp from <fail2ban> to $ext_if port ssh
+## Pass for not blocked
+pass in quick inet proto tcp to port ssh
+
+# Anchors are usualy with quick
+## UPnPd anchor
+anchor miniupnpd
+## Ftp-proxy anchor
+## 16.11.2015 for ftp-proxy should be as in man i.e. "ftp-proxy/*"
+anchor "ftp-proxy/*"
+
+# ICMP
+
+# pass out/in certain ICMP queries and keep state (ping)
+# state matching is done on host addresses and ICMP id (not type/code),
+# so replies (like 0/0 for 8/0) will match queries
+# ICMP error messages (which always refer to a TCP/UDP packet) are
+# handled by the TCP/UDP states
+pass inet proto icmp icmp-type $icmp_types
+
+
+# Classification
+
+## Incoming from LAN
+### Line below nessesary for NAT
+pass in on $int_if from $lannet tag LAN_INET
+pass in on $brg_if from $lannet tag LAN_INET
+### Tags allowed traff from LAN to server
+pass in on $int_if proto tcp from $lannet to ($int_if) port $lannet_tcp_services tag LAN_ALLOWED
+pass in on $int_if proto {tcp udp} from $lannet to ($int_if) port $lannet_udp_services tag LAN_ALLOWED
+pass in on $int_if proto {tcp udp} from any to 255.255.255.255 port $lannet_mtc_services tag LAN_ALLOWED
+## Incoming form INET
+pass in on $ext_if proto tcp from any to ($ext_if) port $extnet_tcp_services tag EXT_ALLOWED
+pass in on $ext_if proto {tcp udp} from any to ($ext_if) port $extnet_udp_services tag EXT_ALLOWED
+
+## Output from server
+pass out on $ext_if from ($ext_if) to any
+pass out on $int_if from any to any
+
+
+# Enforcement
+
+pass quick tagged LAN_INET_NAT
+pass in quick on $ext_if tagged EXT_ALLOWED
+pass in quick on $int_if tagged LAN_ALLOWED
