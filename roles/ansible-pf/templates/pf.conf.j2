@@ -4,7 +4,6 @@
 ext_if = "{{ ext_if }}"
 int_if = "{{ int_if }}"
 brg_if = "{ {{ int_brg_if | join(' ') }} }"
-vagrant_if="em0"
 
 # List of permited services on server. NAT should pass any
 
@@ -40,7 +39,7 @@ set block-policy return
 
 # skip loopback interface
 set skip on lo0
-set skip on $vagrant_if
+{% if vagrant_if is defined %}set skip on "{{ vagrant_if }}"{% endif %}
 
 # 06.03.2017
 set limit states 40000

@@ -8,6 +8,7 @@ int_brg_if:
   - tap0
 int_net: 192.168.5.1/24
 ext_if: em2
+vagrant_if: em0
 ext_tcp_services: "pop3s"
 ext_udp_services: "56124"
 # 5555 - UPnP port (will open ports for torrent and dc++ clients

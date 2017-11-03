@@ -1,6 +1,6 @@
 ---
 
-- name: Setup out interface
+- name: Setup Net parameters
   sysrc:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
@@ -14,8 +14,3 @@
   notify: restart network
 
 - meta: flush_handlers
-
-- name: Install ezjail
-  pkgng:
-    name: ezjail
-    state: present
