@@ -7,6 +7,8 @@ Ansible configuration script FreeBSD based gateway for SOHO
 3. Python should be installed.
 4. LAN interfaces are bridged.
 
+The playbook needs sysrc module from <https://github.com/alet/ansible-sysrc>
+
 ### Installation
 ```sh
 ssh root@gateway hostname gateway
@@ -21,6 +23,8 @@ EOF
 sudo pip install ansible
 git clone git@github.com:alet/freebsd-gateway.git
 cd freebsd-gateway/
+mkdir library
+wget -o library/sysrc https://raw.githubusercontent.com/alet/ansible-sysrc/master/library/sysrc
 cat <<EOF > stage
 [gateway]
 192.168.5.1
