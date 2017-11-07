@@ -25,7 +25,7 @@ icmp_types ="{ echoreq unreach }"
 ######################################
 
 # Table for banned bots
-table <fail2ban> persist
+{% if fail2ban_enable == "yes" %}table <fail2ban> persist{% endif %}
 
 # Networks
 lannet = $int_if:network
@@ -84,7 +84,8 @@ block in log quick on $ext_if from $privatenet to any
 
 # SSH rules. Separate due to importance
 ## Fail2ban block
-block in quick proto tcp from <fail2ban> to $ext_if port ssh
+{% if fail2ban_enable == "yes" %}block in quick proto tcp from <fail2ban> to $ext_if port ssh{% endif %}
+
 ## Pass for not blocked
 pass in quick inet proto tcp to port ssh
 

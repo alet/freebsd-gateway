@@ -6,6 +6,7 @@ Ansible configuration script FreeBSD based gateway for SOHO
 2. The server name should be settuped.
 3. Python should be installed.
 4. LAN interfaces are bridged.
+5. Root login configured at least 'without-password'
 
 The playbook needs sysrc module from <https://github.com/alet/ansible-sysrc>
 

@@ -8,4 +8,5 @@
 
   roles:
     - common
+    - fail2ban
     - ansible-pf
