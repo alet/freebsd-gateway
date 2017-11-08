@@ -16,4 +16,4 @@ ext_udp_services: "56124"
 int_tcp_services: "smtp pop3s http 5555 9091 microsoft-ds netbios-ssn"
 int_udp_services: "domain ntp tftp netbios-ns netbios-dgm"
 int_mult_services: "bootps"
-
+hard_drives: "ada0"

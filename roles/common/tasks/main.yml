@@ -14,3 +14,39 @@
   notify: restart network
 
 - meta: flush_handlers
+
+- name: Install rkhunter
+  pkgng:
+    name: rkhunter
+
+- name: Configure periodic
+  sysrc:
+    file: "/etc/periodic.conf"
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { name: "daily_status_smart_enable", value: "YES" }
+    - { name: "daily_status_smart_devices", value: "{{ hard_drives }}" }
+    - { name: "daily_status_zfs_enable", value: "YES" }
+    - { name: "daily_scrub_zfs_enable", value: "NO" }
+    - { name: "daily_status_security_enable", value: "YES" }
+    - { name: "daily_status_security_pkgaudit_enable", value: "YES" }
+    - { name: "daily_rkhunter_update_enable", value: "YES" }
+    - { name: "daily_rkhunter_check_enable", value: "YES" }
+    - { name: "daily_rkhunter_check_flags", value: "--cronjob --report-warnings-only" }
+    - { name: "security_status_loginfail_enable", value: "NO" }
+    - { name: "daily_ntpd_leapfile_enable", value: "YES" }
+
+- name: Setup ntp parameters
+  sysrc:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { name: "ntpd_enable", value: "YES" }
+    - { name: "ntpdate_enable", value: "YES" }
+    - { name: "ntp_leapfile_fetch_verbose", value: "YES" }
+
+- name: Setup powerd parameters
+  sysrc:
+    name: "powerd_enable"
+    value: "YES"

@@ -32,3 +32,8 @@ cat <<EOF > stage
 EOF
 ansible-playbook --ask-become-pass -b -i stage site.yml
 ```
+
+### Postinstall
+
+1. You may want configure root mail's redirected to your box.
+2. Run rkhunter --propupd
