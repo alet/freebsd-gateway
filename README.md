@@ -3,10 +3,10 @@ Ansible configuration script FreeBSD based gateway for SOHO
 
 ### Prerequires
 1. Server should be setuped on ZFS.
-2. The server name should be settuped.
+2. The server name should be setuped.
 3. Python should be installed.
 4. LAN interfaces are bridged.
-5. Root login configured at least 'without-password'
+5. Root remote login configured at least 'without-password'
 
 The playbook needs sysrc module from <https://github.com/alet/ansible-sysrc>
 
@@ -35,5 +35,5 @@ ansible-playbook --ask-become-pass -b -i stage site.yml
 
 ### Postinstall
 
-1. You may want configure root mail's redirected to your box.
+1. You may want configure root mail's redirection to your box.
 2. Run rkhunter --propupd
