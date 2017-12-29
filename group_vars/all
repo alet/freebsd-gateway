@@ -1,13 +1,18 @@
 ---
 # Tunable variables
 
+is_in_vagrant: "yes"
+hostname: "gateway"
+localdomain: "test.hm"
+outhostname: "testgateway.home"
 timezone: Europe/Kiev
 int_if: bridge0
 int_brg_if:
   - em1
   - tap0
-int_net: 192.168.5.1/24
+int_net: 192.168.5.3/24
 ext_if: em2
+ext_net: SYNCDHCP
 vagrant_if: em0
 ext_tcp_services: "pop3s"
 ext_udp_services: "56124"
