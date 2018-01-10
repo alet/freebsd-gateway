@@ -1,0 +1,62 @@
+---
+
+- name: Installing
+  pkgng:
+    name: "{{ item }}"
+  with_items:
+    - postfix
+    - opendkim
+
+- name: Enabling services
+  sysrc:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { name: "sendmail_enable", value: "NONE" }
+    - { name: "postfix_enable", value: "YES" }
+    - { name: "milteropendkim_enable", value: "YES" }
+    - { name: "milteropendkim_uid", value: "mailnull" }
+
+- name: Configuring Postfix
+  postconf:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { name: "myhostname", value: "{{ outhostname }}" }
+    - { name: "milter_default_action", value: "accept" }
+    - { name: "milter_protocol", value: "2" }
+    - { name: "smtpd_milters", value: "inet:localhost:8891" }
+    - { name: "non_smtpd_milters", value: "inet:localhost:8891" }
+  notify: reload postfix
+
+- name: Check are keys exist
+  stat: path="/usr/local/etc/mail/default.txt"
+  register: keys_stat
+
+- name: Create DKIM keys
+  shell: opendkim-genkey -D /usr/local/etc/mail -d "{{ outhostname }}"
+  when: keys_stat.stat.exists == False
+
+- name: Create keytable
+  template: src=keytable.j2 dest=/usr/local/etc/mail/keytable owner=mailnull group=mailnull mode=0640
+  when: keys_stat.stat.exists == False
+  notify: reload opendkim
+
+- name: Create signingtable
+  template: src=signingtable.j2 dest=/usr/local/etc/mail/signingtable owner=mailnull group=mailnull mode=0640
+  when: keys_stat.stat.exists == False
+  notify: reload opendkim
+
+- name: Configure OpenDKIM
+  template: src="opendkim.j2" dest=/usr/local/etc/mail/opendkim.conf owner=mailnull group=mailnull mode=0640
+  when: keys_stat.stat.exists == False
+  notify: reload opendkim
+
+- name: Check are aliases exist
+  stat: path="/etc/aliases.db"
+  register: aliases_stat
+
+- name: Create aliases.db
+  command: /usr/local/sbin/postalias /etc/aliases
+  notify: reload postfix
+  when: aliases_stat.stat.exists == False

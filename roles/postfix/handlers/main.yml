@@ -1,0 +1,7 @@
+---
+
+- name: reload postfix
+  service: name=postfix state=reloaded
+
+- name: reload opendkim
+  service: name=milter-opendkim state=reloaded

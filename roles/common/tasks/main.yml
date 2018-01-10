@@ -1,8 +1,5 @@
 ---
 
-- name: Configure static IP''s
-  lineinfile: line="{{ int_net|ipaddr('address') }}  {{ hostname }}.{{ localdomain }}        {{ hostname }}" path="/etc/hosts"
-  
 - name: Workaround for Vagrant
   sysrc: name="ifconfig_em0" value="SYNCDHCP"
   when: is_in_vagrant == "yes"
@@ -13,7 +10,7 @@
     value: "{{ item.value }}"
   with_items:
     - { name: "gateway_enable", value: "YES" }
-    - { name: "hostname", value: "{{ hostname }}" }
+    - { name: "hostname", value: "{{ outhostname }}" }
   notify: restart network
 
 - meta: flush_handlers
